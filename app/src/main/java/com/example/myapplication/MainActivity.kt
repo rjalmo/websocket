@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    val endpoint = Url("http://192.168.1.136:8080")
+    val endpoint = Url("https://192.168.1.136:8080")
 
     private val client = HttpClient(OkHttp) {
         install(WebSockets)
@@ -60,10 +60,10 @@ class MainActivity : ComponentActivity() {
             client.webSocket({
                 url {
                     takeFrom(endpoint)
-                    protocol = URLProtocol.WS
+                    protocol = URLProtocol.WSS
                 }
             }) {
-                send(Frame.Text("Ping to webserver"))
+//                send(Frame.Text("Ping to webserver"))
                 //Do something
             }
         }
