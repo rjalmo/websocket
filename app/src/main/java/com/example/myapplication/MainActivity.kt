@@ -8,78 +8,59 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.Call
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.websocket.*
-import io.ktor.http.*
-import io.ktor.http.cio.websocket.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private val scope = CoroutineScope(Dispatchers.Default)
-
-    val endpoint = Url("https://192.168.1.136:8080")
-
-    private val client = HttpClient(OkHttp) {
-        install(WebSockets)
-        install(JsonFeature) {
-            serializer = KotlinxSerializer()
-            acceptContentTypes = acceptContentTypes + ContentType.Any
-        }
-    }
+    private val socket = Socket()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setupWebSocket()
         setContent {
             MyApplicationTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-                    Greeting("Android")
-                    Send()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    Send(socket)
                 }
             }
         }
     }
 
-    private fun setupWebSocket() {
-        scope.launch {
-//            client.ws("http://192.168.1.136:8080") {
-//                send(Frame.Text("Ping to webserver"))
-//                println((incoming.receive() as? Frame.Text)?.readText())
-//            }
-            client.webSocket({
-                url {
-                    takeFrom(endpoint)
-                    protocol = URLProtocol.WSS
-                }
-            }) {
-//                send(Frame.Text("Ping to webserver"))
-                //Do something
-            }
-        }
-    }
 }
 
 @Composable
-fun Send() {
-    val coroutineScope = rememberCoroutineScope()
+fun Send(socket: Socket) {
+    val scope = rememberCoroutineScope()
     IconButton(onClick = {
-        coroutineScope.launch {
-            // TODO send
+        scope.launch {
+            // TODO: use real message
+            socket.send("testing send")
         }
     }) {
         Icon(Icons.TwoTone.Call, contentDescription = "Load")
     }
+}
+
+@Composable
+fun SimpleOutlinedTextFieldSample() {
+    var text by remember { mutableStateOf("") }
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = { text = it },
+        label = { Text("Label") }
+    )
 }
 
 @Composable
@@ -92,6 +73,5 @@ fun Greeting(name: String) {
 fun DefaultPreview() {
     MyApplicationTheme {
 //        Greeting("asdf")
-        Send()
     }
 }
